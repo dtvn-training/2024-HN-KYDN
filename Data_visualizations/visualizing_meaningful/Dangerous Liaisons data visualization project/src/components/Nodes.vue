@@ -6,7 +6,6 @@
 
 <script>
 import D3Network from "vue-d3-network";
-import letters from "../assets/letters.json";
 
 export default {
   name: "Nodes",
@@ -16,52 +15,44 @@ export default {
   data() {
     return {
       nodes: [],
-      links: [
-        /*{ sid: 1, tid: 2 },
-         */
-      ],
+      links: [],
       nodeSize: 10,
       canvas: false,
     };
   },
   methods: {
     createLinks(characters) {
-      //loop through letters
-      let f = 0;
-      let t = 0;
-      for (var i = 0; i < letters.length; i++) {
-          for (var j = 0; j < characters.length; j++) {
-              
-            if (characters[j] == letters[i].from) {
-              f = j;
-            }
-            if (characters[j] == letters[i].to) {
-              t = j;
-            }
+      let f, t;
+      const familyRelationships = [
+        { from: "Grandparent 1", to: "Parent 1" },
+        { from: "Grandparent 2", to: "Parent 1" },
+        { from: "Grandparent 1", to: "Parent 2" },
+        { from: "Grandparent 2", to: "Parent 2" },
+        { from: "Parent 1", to: "Child 1" },
+        { from: "Parent 1", to: "Child 2" },
+        { from: "Parent 2", to: "Child 3" },
+        { from: "Parent 2", to: "Child 4" },
+      ];
+
+      for (const relation of familyRelationships) {
+        f = characters.indexOf(relation.from);
+        t = characters.indexOf(relation.to);
+
+        if (f !== -1 && t !== -1) {
+          this.links.push({ sid: f, tid: t });
         }
-        this.links.push({ sid: f, tid: t });
       }
-      
     },
     getCount(name) {
-      var count = 0;
-      for (var i = 0; i < letters.length; i++) {
-        if (letters[i].to === name) {
-          count++;
-        }
-      }
-      return count;
+      return this.links.filter(link => link.tid === this.nodes.findIndex(node => node.name === name)).length;
     },
   },
   computed: {
     options() {
       return {
         force: 3000,
-        size: { w: 600, h: 600 },
-        offset: {
-          x: 0,
-          y: 0,
-        },
+        size: { w: 800, h: 600 },
+        nodeSize: this.nodeSize,
         nodeLabels: true,
         linkLabels: true,
         canvas: this.canvas,
@@ -70,27 +61,20 @@ export default {
   },
 
   created() {
-    let characters = [
-      "Chevalier Danceny",
-      "Marquise de Merteuil",
-      "Cécile Volanges",
-      "Présidente de Tourvel",
-      "Azolan, chasseur",
-      "Madame de Rosemonde",
-      "Madame de Volanges",
-      "Vicomte de Valmont",
-      "Père Anselme",
-      "...",
-      "M. Bertrand",
-      "Anonyme",
-      "Sophie Carnay",
-      "Maréchale de ***",
-      "Le Comte de Gercourt",
+    const characters = [
+      "Grandparent 1",
+      "Grandparent 2",
+      "Parent 1",
+      "Parent 2",
+      "Child 1",
+      "Child 2",
+      "Child 3",
+      "Child 4",
     ];
 
     this.createLinks(characters);
 
-    for (var j = 0; j < characters.length; j++) {
+    for (let j = 0; j < characters.length; j++) {
       this.nodes.push({
         id: j,
         name: characters[j],
@@ -114,9 +98,8 @@ canvas {
   margin: 0;
 }
 .node {
-  -webkit-transition: fill 0.5s ease;
-  fill: #dcfaf3;
   transition: fill 0.5s ease;
+  fill: #dcfaf3;
 }
 .node.selected {
   stroke: #caa455;
@@ -147,9 +130,8 @@ canvas {
   fill: black;
 }
 .link-label {
-  -webkit-transform: translateY(-0.5em);
-  text-anchor: middle;
   transform: translateY(-0.5em);
+  text-anchor: middle;
 }
 
 body {
@@ -173,14 +155,6 @@ body {
   position: absolute;
   top: 0;
   width: 100%;
-}
-
-.links {
-  list-style: none;
-  margin: 1em 5em 0 0;
-  position: absolute;
-  right: 0;
-  top: 0;
 }
 
 #app {
