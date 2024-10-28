@@ -12,7 +12,6 @@ chrome_options.add_argument('--headless')
 chrome_options.add_argument('--no-sandbox')
 chrome_options.add_argument('--disable-dev-shm-usage')
 
-# Khởi tạo trình duyệt Chrome
 browser = webdriver.Chrome(service=Service(ChromeDriverManager().install()), options=chrome_options)
 
 
@@ -20,7 +19,6 @@ def crawl_data(year, areacode):
     sbd_list = [areacode + f'{j:06}' for j in range(1, 1000)] 
     data_list = []
 
-    # Sử dụng tqdm để hiển thị thanh tiến độ
     for sbd in tqdm(sbd_list, desc="Đang thu thập dữ liệu", unit="sbd"):
         url = f'https://diemthi.vnanet.vn/Home/SearchBySobaodanh?code={sbd}&nam={year}'
 
@@ -46,5 +44,5 @@ def crawl_data(year, areacode):
     df.to_csv(f'./Data_visualizations/Challenge/diem_thi_{areacode}_{year}.csv', index=False)
 
 if __name__== "__main__":
-    print('hello')
+    print('Starting crawl ... !')
     crawl_data(2024, '03')
