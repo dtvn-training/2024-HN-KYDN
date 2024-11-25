@@ -4,12 +4,13 @@ from torch.utils.data import DataLoader
 from torchvision import datasets
 import numpy as np
 import os
-from .getface import mtcnn_inceptionresnetV1, mtcnn_inceptionresnetV2, mtcnn_resnet
-from .infer_image import get_model, resnet_transform, inceptionresnetV2_transform, inceptionresnetV1_transform
+from .getface import mtcnn_inceptionresnetV1, mtcnn_resnet
+from .infer_image import get_model, resnet_transform, inceptionresnetV1_transform
 from torch.nn.modules.distance import PairwiseDistance
 import pickle
 from torchvision import transforms
-
+from .getface import yolo
+from PIL import Image
 
 device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 
@@ -26,39 +27,30 @@ def create_data_embeddings(data_gallary_path, recognition_model_name, save_path)
         return x[0]
 
     dataset = datasets.ImageFolder(data_gallary_path)
-    dataset.idx_to_class = {i: c for c, i in dataset.class_to_idx.items()}
+    dataset.index2class = {i: c for c, i in dataset.class_to_idx.items()}
     loader = DataLoader(dataset, collate_fn=collate_fn, num_workers=workers)
 
     aligned = []  # List of images in the gallery
-    names = []    # List of names corresponding to images
+    image2class = {}   # List of names corresponding to images
 
-    if recognition_model_name == 'resnet34':
-        for x, y in loader:
-            x_aligned = mtcnn_resnet(x)
-           
-            if x_aligned is not None:
-                x_aligned = resnet_transform(x_aligned, 140)
+
+    for i, (x, y) in enumerate(loader):
+        x_aligned = mtcnn_inceptionresnetV1(x)
+        image2class[i]= y
+
+        if x_aligned is not None:
+            x_aligned = inceptionresnetV1_transform(x_aligned)
+            aligned.append(x_aligned)
+        else:
+            results = yolo(x)
+
+            if results[0].boxes is not None:
+                boxes = results[0].boxes.xyxy.cpu().numpy() 
+                x1, y1, x2, y2 = map(int, boxes[0]) 
+                face = x.crop((x1, y1, x2, y2)).resize((160, 160), Image.Resampling.LANCZOS)
+                x_aligned = inceptionresnetV1_transform(face)
                 aligned.append(x_aligned)
-                names.append(dataset.idx_to_class[y])
-
-    elif  recognition_model_name == 'inceptionresnetV2':
-        for x, y in loader:
-            x_aligned = mtcnn_inceptionresnetV2(x)
-            
-            if x_aligned is not None:
-                x_aligned = inceptionresnetV2_transform(x_aligned, (299, 299))
-                aligned.append(x_aligned)
-                names.append(dataset.idx_to_class[y])
-
-    else:
-          for x, y in loader:
-            x_aligned = mtcnn_inceptionresnetV1(x)
-           
-            if x_aligned is not None:
-                x_aligned   = inceptionresnetV1_transform(x_aligned)
-                aligned.append(x_aligned)
-                names.append(dataset.idx_to_class[y])
-
+        
 
     if aligned:
         aligned = torch.cat(aligned, dim=0).to(device)
@@ -68,39 +60,49 @@ def create_data_embeddings(data_gallary_path, recognition_model_name, save_path)
         embedding_file_path = os.path.join(save_path, f"{recognition_model_name}_embeddings.npy")
         np.save(embedding_file_path, embeddings)
 
-        names_file_path = os.path.join(save_path, f"{recognition_model_name}_names.pkl")
-        with open(names_file_path, 'wb') as f:
-            pickle.dump(names, f)
+        image2class_file_path = os.path.join(save_path, f"{recognition_model_name}_image2class.pkl")
+        with open(image2class_file_path, 'wb') as f:
+            pickle.dump(image2class, f)
+
+        index2class_file_path = os.path.join(save_path, f"{recognition_model_name}_index2class.pkl")
+        with open(index2class_file_path, 'wb') as f:
+            pickle.dump(dataset.index2class, f)
 
         print(f"Embeddings saved to {embedding_file_path}")
-        print(f"Names saved to {names_file_path}")
+        print(f"image2class saved to {image2class_file_path}")
+        print(f"index2class saved to {index2class_file_path}")
         
-        return embeddings, names
+        return embeddings, image2class, dataset.index2class
     else:
         print("No aligned images found.")
        
-def load_embeddings_and_names(embedding_file_path, names_file_path):
+def load_embeddings_and_names(embedding_file_path, image2class_file_path, index2class_file_path):
     
     embeddings = np.load(embedding_file_path)
-    with open(names_file_path, 'rb') as f:
-        names = pickle.load(f)
+    with open(image2class_file_path, 'rb') as f:
+        image2class = pickle.load(f)
 
-    return embeddings, names
+    with open(index2class_file_path, 'rb') as f:
+        index2class = pickle.load(f)
 
+    return embeddings, image2class, index2class
 
 if __name__ == '__main__':
     
     data_gallary_path = 'data/dataset'
-    embedding_save_path = 'data/embedding_names'
-    embeddings, names = create_data_embeddings(data_gallary_path, 'inceptionresnetV1', embedding_save_path )
+    embedding_save_path = 'data/data_source'
+    embeddings, image2class, index2class = create_data_embeddings(data_gallary_path, 'inceptionresnetV1', embedding_save_path )
+ 
 
+    embedding_file_path= 'data/data_source/inceptionresnetV1_embeddings.npy'
+    image2class_file_path = 'data/data_source/inceptionresnetV1_image2class.pkl'
+    index2class_file_path = 'data/data_source/inceptionresnetV1_index2class.pkl'
 
-
-    # embedding_file_path= 'data/embedding_names/inceptionresnetV1_embeddings.npy'
-    # names_file_path = 'data/embedding_names/inceptionresnetV1_names.pkl'
-
-    # embeddings, names = load_embeddings_and_names(embedding_file_path, names_file_path)
+    # embeddings, image2class, index2class = load_embeddings_and_names(embedding_file_path, image2class_file_path, index2class_file_path)
 
     
     print(embeddings.shape)
-    print(names)
+    print(image2class)
+    print(index2class)
+
+ 
