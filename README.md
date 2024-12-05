@@ -154,5 +154,5 @@ Home
 Recogn with real person:
 <video controls src="Face_recognition/image/README/real_infer.mp4" title="Title"></video>
 Recogn with spoof person:
-<video controls src="Face_recognition/image/README/spoof_infer.mp4" title="Face_recognition/image/README/spoof_infer.mp4"></video>
+<video controls src="Face_recognition/image/README/spoof_infer.mp4" title="Title"></video>
 
