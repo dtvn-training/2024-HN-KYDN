@@ -152,7 +152,10 @@ Home
 ![alt text](Face_recognition/image/README/image.png)
 
 Recogn with real person:
-<video controls src="Face_recognition/image/README/real_infer.mp4" title="Title"></video>
+
+https://github.com/user-attachments/assets/c23e7a14-9da8-4dcc-b54f-7b99ff32a8cd
+
 Recogn with spoof person:
-<video controls src="Face_recognition/image/README/spoof_infer.mp4" title="Title"></video>
+
+https://github.com/user-attachments/assets/859c6840-fbce-47f7-aadc-f52bb411916c
 
