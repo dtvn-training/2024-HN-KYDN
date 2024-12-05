@@ -153,6 +153,5 @@ Home
 
 Recogn with real person:
 <video controls src="Face_recognition/image/README/FACE RECOGNITION 2024-12-05 15-17-46 - Trim.mp4" title="Title"></video>
-
 Recogn with spoof person:
 <video controls src="Face_recognition/image/README/FACE RECOGNITION 2024-12-05 15-28-14 - Trim.mp4" title="Title"></video>
