@@ -17,6 +17,21 @@ device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 
 
 def test_model(test_folder, recognition_model_name, embedding_file_path, image2class_file_path, index2class_file_path, batch_size=512):
+    '''
+    Tests a face recognition model by comparing embeddings from test images with pre-stored embeddings.
+
+    Parameters:
+    - test_folder (str): Path to the folder containing test images organized by class.
+    - recognition_model_name (str): Name of the pre-trained recognition model to be loaded.
+    - embedding_file_path (str): Path to the file containing stored embeddings for known identities.
+    - image2class_file_path (str): Path to the file mapping image indices to class IDs.
+    - index2class_file_path (str): Path to the file mapping class indices to class names.
+    - batch_size (int, optional): Number of images to process in a single batch. Default is 512.
+
+    Returns:
+    - float: Percentage of correctly matched test images based on the model's predictions.
+
+    '''
     recognition_model = get_model(recognition_model_name)
 
     def collate_fn(x):
@@ -95,11 +110,11 @@ def test_model(test_folder, recognition_model_name, embedding_file_path, image2c
 
 
 if __name__ == "__main__":
-    test_folder = 'data/data_gallery_1'
+    test_folder = 'data/data_gallery_2'
 
-    embedding_file_path= 'data/data_source/db1/inceptionresnetV1_embeddings.npy'
-    image2class_file_path = 'data/data_source/db1/inceptionresnetV1_image2class.pkl'
-    index2class_file_path = 'data/data_source/db1/inceptionresnetV1_index2class.pkl'
+    embedding_file_path= 'data/data_source/db2/inceptionresnetV1_embeddings.npy'
+    image2class_file_path = 'data/data_source/db2/inceptionresnetV1_image2class.pkl'
+    index2class_file_path = 'data/data_source/db2/inceptionresnetV1_index2class.pkl'
 
     percentage = test_model(test_folder=test_folder, 
                recognition_model_name='inceptionresnetV1',

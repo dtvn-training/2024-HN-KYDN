@@ -47,7 +47,7 @@ def set_optimizer(optimizer, model, learning_rate):
     return optimizer_model
 
 def set_model_architecture(model_architecture, pretrained, embedding_dimension):
-    if model_architecture == "inceptionresnetv2":
+    if model_architecture == "inceptionresnetV1":
         model = InceptionResnetV1(
             embedding_dimension=embedding_dimension,
             pretrained=pretrained
@@ -95,7 +95,7 @@ def train():
     lfw_dataroot = '/kaggle/input/data-train-and-val/lfw-224/lfw_224'
     lfw_batch_size = 128
     num_workers= 4
-    model_architecture = 'resnet34'
+    model_architecture = 'inceptionresnetV1'
     pretrained= True
     embedding_dimension= 512
     optimizer= 'adagrad'
@@ -105,7 +105,7 @@ def train():
     iterations_per_epoch = 1000
     epochs = 100
     margin = 0.2
-    resume_path= '/kaggle/input/resnet_triplet34/pytorch/default/1/model_resnet34_triplet.pt'
+    resume_path= '/kaggle/input/pytorch/default/1/inceptionresnetV1.pt'
     training_triplets_path = None
     image_size = 140
     use_semihard_negatives = True

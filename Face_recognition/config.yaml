@@ -1,6 +1,6 @@
  
 infer_video:
-  min_face_area: 10000
+  min_face_area: 9000
   bbox_threshold: 0.7
   required_images: 16
   validation_threshold: 0.7
@@ -10,8 +10,8 @@ infer_video:
   anti_spoof_threshold: 0.9
 
 identity_person:
-  l2_threshold: 1.1
-  cosine_threshold: 0.6
+  l2_threshold: 0.95
+  cosine_threshold: 0.55
   k: 5 
   vote_threshold:  0.8
   distance_mode: 'cosine'

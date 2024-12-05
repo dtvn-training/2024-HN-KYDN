@@ -5,16 +5,14 @@ from .utils import get_model
 from PIL import Image
 import torch
 from torchvision import transforms
-from torch.nn.modules.distance import PairwiseDistance
-from .getface import mtcnn_inceptionresnetV1, mtcnn_resnet, yolo
-from models.face_recogn.inceptionresnetV1 import InceptionResnetV1
+from .getface import mtcnn_inceptionresnetV1, yolo
 import torch.nn.functional as F
-from models.spoofing.FasNet import Fasnet
 import cv2
 
-
+# define device
 device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 
+#define transform
 def inceptionresnetV1_transform(img):
     if not isinstance(img, torch.Tensor):
         img = transforms.ToTensor()(img)
@@ -23,26 +21,23 @@ def inceptionresnetV1_transform(img):
     return img
 
 
-
-def resnet_transform(image):
-    data_transforms = transforms.Compose([
-    transforms.ToPILImage(),
-    transforms.Resize(size=140),
-    transforms.ToTensor(),
-    transforms.Normalize(
-        mean=[0.6071, 0.4609, 0.3944], 
-        std=[0.2457, 0.2175, 0.2129]   
-    )
-    ])
-  
-    img = data_transforms(image)
-    img = img.unsqueeze(0)
-    img = img.to(device)
-
-    return img
-
-
+# infer function
 def infer(recogn_model, align_image):
+    '''
+     Runs inference on an aligned image to generate its embedding using the recognition model.
+
+    Parameters:
+    ----------
+    recogn_model : torch.nn.Module
+        The face recognition model used to generate embeddings.
+    align_image : PIL.Image.Image
+        The pre-aligned input image for which the embedding is to be generated.
+
+    Returns:
+    -------
+    embedding : torch.Tensor or None
+        The embedding vector for the input image. Returns `None` if an error occurs. 
+    '''
     try:
         input_image = inceptionresnetV1_transform(align_image)
         embedding = recogn_model(input_image)
@@ -53,7 +48,22 @@ def infer(recogn_model, align_image):
         return None
     
 
+
 def get_align(image):
+    '''
+    Aligns and extracts facial information from an input image using MTCNN and InceptionResNetV1.
+
+    Parameters:
+        image (PIL.Image or ndarray): The input image containing a face.
+
+    Returns:
+        tuple:
+            input_image (torch.Tensor or None): The preprocessed image tensor of the detected face if found, otherwise the original image.
+            face (ndarray or None): The bounding box coordinates (x_min, y_min, x_max, y_max) of the detected face if found, otherwise None.
+            prob (float): The probability/confidence score of the detected face. Default is 0 if no face is detected.
+            lanmark (ndarray or None): The landmarks (e.g., eyes, nose, mouth corners) of the detected face if found, otherwise None.
+
+    '''
     face= None
     input_image = image
     prob = 0
@@ -72,31 +82,24 @@ def get_align(image):
 
 if __name__ == "__main__":
     
-    antispoof_model = Fasnet()
-
-    image = Image.open('testdata/thaotam/006.jpg').convert('RGB')
+    image = Image.open('data/data_gallery_1/Nguyen Huu Duc/Screenshot 2024-11-18 195528.png').convert('RGB')
     input_image, face, prob, landmark = get_align(image)
 
-    # In các thông tin nhận diện
     print(input_image.shape)
     print(face)
     print(prob)
     print(landmark)
 
-    # Chuyển ảnh sang dạng numpy array và đổi màu từ RGB sang BGR cho OpenCV
     image = np.array(image)
     image = cv2.cvtColor(image, cv2.COLOR_RGB2BGR)
 
-    # Vẽ hình chữ nhật bao quanh khuôn mặt
     x1, y1, x2, y2 = map(int, face)
     cv2.rectangle(image, (x1, y1), (x2, y2), (0, 255, 0), 2)
 
-    # Hiển thị xác suất nhận diện khuôn mặt
     cv2.putText(image, f"Face {prob:.2f}", (x1, y1 - 10), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0, 255, 0), 2)
 
-    # Vẽ các điểm landmark (các chấm)
     for (x, y) in landmark:
-        cv2.circle(image, (int(x), int(y)), 2, (0, 0, 255), -1)  # Chấm màu đỏ, bán kính 2
+        cv2.circle(image, (int(x), int(y)), 2, (0, 0, 255), -1)
 
 
     cv2.imshow('image', image)

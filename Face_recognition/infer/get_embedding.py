@@ -3,14 +3,14 @@ import torch
 from torch.utils.data import DataLoader
 import numpy as np
 import os
-from .getface import mtcnn_inceptionresnetV1, mtcnn_resnet
-from .infer_image import get_model, resnet_transform, inceptionresnetV1_transform
-from torch.nn.modules.distance import PairwiseDistance
+from .getface import mtcnn_inceptionresnetV1
+from .infer_image import get_model, inceptionresnetV1_transform
 import pickle
 from torchvision import transforms
 from .getface import yolo
 from PIL import Image
 
+# set device
 device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 
 workers = 0 if os.name == 'nt' else 4
@@ -79,7 +79,42 @@ workers = 0 if os.name == 'nt' else 4
 #         print("No aligned images found.")
 
 
+
 def create_data_embeddings(data_gallary_path, recognition_model_name, save_path, batch_size=64):
+    '''
+    Generates embeddings for a dataset of images using a specified recognition model and saves the results.
+
+    Parameters:
+    ----------
+    data_gallary_path : str
+        Path to the directory containing the image dataset. The dataset should be organized in subdirectories 
+        where each subdirectory represents a class.
+        
+    recognition_model_name : str
+        The name of the recognition model to be used for generating embeddings. This will be used to load 
+        the appropriate model.
+        
+    save_path : str
+        Path to the directory where the generated embeddings
+        will be saved.
+        
+    batch_size : int, optional
+        The number of images to process in a single batch. Default is 64.
+
+    Returns:
+    -------
+    embeddings : numpy.ndarray
+        A 2D array where each row is the embedding of an image in the dataset.
+        
+    image2class : dict
+        A dictionary mapping image indices to their corresponding class labels.
+        
+    dataset.index2class : dict
+        A dictionary mapping index values to class names in the dataset.
+
+    '''
+    
+     
     if not os.path.exists(save_path):
         os.makedirs(save_path)
 
@@ -157,7 +192,27 @@ def create_data_embeddings(data_gallary_path, recognition_model_name, save_path,
 
 
 def load_embeddings_and_names(embedding_file_path, image2class_file_path, index2class_file_path):
-    
+    '''
+        Loads precomputed embeddings, image-to-class mapping, and index-to-class mapping from saved files.
+
+        Process:
+        -------
+        1. Loads the embeddings from a `.npy` file.
+        2. Deserializes the `image2class` dictionary from a `.pkl` file.
+        3. Deserializes the `index2class` dictionary from a `.pkl` file.
+
+        Returns:
+        -------
+        embeddings : numpy.ndarray
+            A 2D array containing the precomputed embeddings for the dataset.
+            
+        image2class : dict
+            A dictionary mapping image indices to their corresponding class labels.
+            
+        index2class : dict
+            A dictionary mapping index values to class names.
+
+    '''
     embeddings = np.load(embedding_file_path)
     with open(image2class_file_path, 'rb') as f:
         image2class = pickle.load(f)
@@ -174,9 +229,9 @@ if __name__ == '__main__':
     # embeddings, image2class, index2class = create_data_embeddings(data_gallary_path, 'inceptionresnetV1', embedding_save_path )
  
 
-    embedding_file_path= 'data/data_source/db2/inceptionresnetV1_embeddings.npy'
-    image2class_file_path = 'data/data_source/db2/inceptionresnetV1_image2class.pkl'
-    index2class_file_path = 'data/data_source/db2/inceptionresnetV1_index2class.pkl'
+    embedding_file_path= 'data/data_source/db1/inceptionresnetV1_embeddings.npy'
+    image2class_file_path = 'data/data_source/db1/inceptionresnetV1_image2class.pkl'
+    index2class_file_path = 'data/data_source/db1/inceptionresnetV1_index2class.pkl'
 
     embeddings, image2class, index2class = load_embeddings_and_names(embedding_file_path, image2class_file_path, index2class_file_path)
 

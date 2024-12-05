@@ -32,6 +32,16 @@ image2class= None
 index2class = None
 
 def select_db():
+    '''
+    Allows the user to select a database directory containing embeddings and mappings 
+    for face recognition. Loads the selected files into global variables.
+
+    Globals:
+        embeddings: Numpy array containing precomputed face embeddings.
+        image2class: Dictionary mapping image indices to class labels.
+        index2class: Dictionary mapping class indices to class names.
+
+    '''
     global  embeddings, image2class, index2class
     db_path = filedialog.askdirectory(title="please select db")
 
@@ -52,8 +62,7 @@ def select_db():
                                                                     embedding_file_path= embeddings_path,
                                                                     image2class_file_path= image2class_path,
                                                                     index2class_file_path= index2class_path)
-
-
+    
 def infer_camera( 
                 
                 min_face_area=config['min_face_area'],
@@ -65,6 +74,24 @@ def infer_camera(
                 distance_mode=config['distance_mode'], 
                 anti_spoof_threshold=config['anti_spoof_threshold']):
     
+    '''
+    Real-time face recognition using a webcam with validation and anti-spoofing.
+
+    Parameters:
+        min_face_area (int): Minimum area required for a detected face to be considered valid.
+        bbox_threshold (float): Confidence threshold for face bounding box detection.
+        required_images (int): Number of valid face images required for validation.
+        validation_threshold (float): Minimum proportion of matches needed for validation.
+        is_anti_spoof (bool): Whether to enable anti-spoofing checks.
+        is_vote (bool): Whether to use voting logic for validation.
+        distance_mode (str): Mode of calculating distance for face embedding comparison.
+        anti_spoof_threshold (float): Threshold for anti-spoofing confidence.
+
+    Returns:
+        None
+
+    '''
+
     global embeddings, image2class, index2class
 
     cap = cv2.VideoCapture(0)
@@ -80,6 +107,10 @@ def infer_camera(
     sound_delay = 2 
 
     def update_frame():
+        '''
+          Continuously captures frames from the camera, detects faces, and validates them.
+          
+        '''
         nonlocal previous_message, valid_images, is_reals, last_sound_time
         while True:
             ret, frame = cap.read()
@@ -188,6 +219,7 @@ def infer_camera(
 
 
 def start_infer_camera():
+
     if embeddings is None:
         CTkMessagebox.messagebox(title='Database select', text='Please select database!', sound='on', button_text='OK')
     else: 
@@ -210,6 +242,7 @@ def start_infer_camera():
                         anti_spoof_threshold= anti_spoof_threshold
                     )
 
+
 def update_status_display(person_name):
     if person_name:  
         image_path = 'audio/accept.png'
@@ -221,13 +254,13 @@ def update_status_display(person_name):
     original_image_label.configure(text=message)
 
     or_image = Image.open(image_path)
-    or_image.thumbnail((250, 250))
+    or_image.thumbnail((200, 200))
     origin_image = ImageTk.PhotoImage(or_image)
     status_image_label.configure(image=origin_image)
     status_image_label.image = origin_image
 
     def reset_status():
-        original_image_label.configure(text="Waiting for result...")
+        original_image_label.configure(text="Waiting input face...")
         status_image_label.configure(image=None)
         status_image_label.image = None
 
@@ -240,7 +273,7 @@ def update_status_display(person_name):
 # START INTERFACE 
 root = customtkinter.CTk()
 root.title("FACE RECOGNITION")
-root.geometry(f"900x550")
+root.geometry(f"1150x550")
 # root.resizable(False, False) 
 root.grid_columnconfigure((1, 2, 3), weight=1)
 root.grid_rowconfigure((0, 1, 2,), weight=1)
@@ -328,7 +361,7 @@ anti_spoof_threshold_label = customtkinter.CTkLabel(left_frame, text="Anti spoof
 anti_spoof_threshold_label.pack(pady=5)
 
 def update_anti_spoof_thres(value):
-    bbox_threshold_label.configure(text=f"Anti spoof threshold: {value:.2f}")
+    anti_spoof_threshold_label.configure(text=f"Anti spoof threshold: {value:.2f}")
 
 anti_spoof_threshold_slider = customtkinter.CTkSlider(left_frame, from_=0.5, to=1.0, number_of_steps=10, command= update_anti_spoof_thres)
 anti_spoof_threshold_slider.set(0.9)
@@ -372,7 +405,6 @@ def update_validation_threshold(value):
 validation_threshold_slider = customtkinter.CTkSlider(left_frame, from_=0.5, to=1.0, number_of_steps=20, command= update_validation_threshold)
 validation_threshold_slider.set(0.7)
 validation_threshold_slider.pack(pady=4, padx=(4,4))
-
 
 
 

@@ -9,8 +9,6 @@ from PIL import Image
 from models.spoofing.FasNet import Fasnet
 import numpy as np
 from collections import Counter
-from .getface import mtcnn_inceptionresnetV1
-from models.face_detect.OpenCv import OpenCvClient
 from .infer_image import infer, get_align
 from .utils import get_model
 import os
@@ -23,21 +21,38 @@ import pandas as pd
 import time
 import threading
 
+# use config
 with open('config.yaml', 'r') as file:
     config = yaml.safe_load(file)['infer_video']
 
-
+# get recogn model
 recogn_model = get_model('inceptionresnetV1')
+# define distance calculator
 l2_distance = PairwiseDistance(p=2)
+
 device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 antispoof_model = Fasnet()
-opencv = OpenCvClient()
 
 
 def infer_camera(min_face_area=config['min_face_area'], 
                  bbox_threshold=config['bbox_threshold'], 
                  required_images=config['required_images']):
-   
+    
+    '''
+    Captures frames from the camera, detects faces, and processes valid images 
+    based on face alignment, spoofing detection, and additional conditions.
+
+    Parameters:
+        min_face_area (int): Minimum face area (in pixels) required for a valid detection.
+        bbox_threshold (float): Minimum confidence score required to consider a detected face as valid.
+        required_images (int): The number of valid face images to collect before stopping.
+
+    Returns:
+        dict: A dictionary containing:
+            - 'valid_images' (list): A list of preprocessed images (torch.Tensor) of valid faces.
+    
+    '''
+
     cap = cv2.VideoCapture(0)
 
     if not cap.isOpened():
@@ -116,19 +131,15 @@ def infer_camera(min_face_area=config['min_face_area'],
                 print("Không phát hiện khuôn mặt")
                 previous_message = 0
 
-                
-
         cv2.imshow('FACE RECOGNITON', frame)
 
         if cv2.waitKey(1) & 0xFF == ord('q'):
             break
 
-        # Dừng vòng lặp nếu đã thu thập đủ số ảnh hợp lệ
         if len(valid_images) >= required_images:
             print(f"Đã thu thập đủ {required_images} ảnh hợp lệ.")
             break
      
-    # Giải phóng camera và đóng cửa sổ
     cap.release()
     cv2.destroyAllWindows()
     result = {
@@ -151,7 +162,27 @@ def check_validation(
         is_vote=config['is_vote'],
         distance_mode=config['distance_mode'], 
         anti_spoof_threshold=config['anti_spoof_threshold']):
-    
+    '''
+    Validates and identifies a person based on input images and embeddings.
+
+    Parameters:
+        input (dict): A dictionary containing:
+            - 'valid_images' (list): List of valid preprocessed face images (torch.Tensor).
+            - 'is_reals' (list): List of tuples (bool, float) indicating if the image passed anti-spoof checks and its score.
+        embeddings Tensor: Precomputed embeddings for known classes.
+        image2class (dict): Mapping of embeddings to their respective class IDs.
+        idx_to_class (dict): Mapping of class IDs to human-readable names.
+        recogn_model (torch.nn.Module): The face recognition model used for inference.
+        is_anti_spoof (bool): Whether to apply anti-spoofing validation.
+        validation_threshold (float): The minimum ratio of valid votes required to confirm identification.
+        is_vote (bool): Whether to use voting logic for identification.
+        distance_mode (str): The distance metric used for embedding comparison ('cosine' or 'euclidean').
+        anti_spoof_threshold (float): The score threshold for anti-spoof validation.
+
+    Returns:
+        str or bool: The name of the identified person if validation succeeds, otherwise False.
+
+    '''
     valid_images = input['valid_images']
 
     if len(valid_images) == 0:
@@ -240,9 +271,9 @@ def check_validation(
 if __name__ == '__main__':
 
     recogn_model_name = 'inceptionresnetV1'
-    embedding_file_path = f'data/data_source/db3/{recogn_model_name}_embeddings.npy'
-    image2class_file_path = f'data/data_source/db3/{recogn_model_name}_image2class.pkl'
-    index2class_file_path = f'data/data_source/db3/{recogn_model_name}_index2class.pkl'
+    embedding_file_path = f'data/data_source/db1/{recogn_model_name}_embeddings.npy'
+    image2class_file_path = f'data/data_source/db1/{recogn_model_name}_image2class.pkl'
+    index2class_file_path = f'data/data_source/db1/{recogn_model_name}_index2class.pkl'
     
     embeddings, image2class, index2class = load_embeddings_and_names(embedding_file_path, image2class_file_path, index2class_file_path)
     result = infer_camera()
