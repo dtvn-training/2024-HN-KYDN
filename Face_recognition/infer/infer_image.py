@@ -82,7 +82,7 @@ def get_align(image):
 
 if __name__ == "__main__":
     
-    image = Image.open('data/data_gallery_1/Nguyen Huu Duc/Screenshot 2024-11-18 195528.png').convert('RGB')
+    image = Image.open('data/data_gallery_1/Dinh Nhat Ky/transformed_image_21.png').convert('RGB')
     input_image, face, prob, landmark = get_align(image)
 
     print(input_image.shape)
@@ -99,7 +99,7 @@ if __name__ == "__main__":
     cv2.putText(image, f"Face {prob:.2f}", (x1, y1 - 10), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0, 255, 0), 2)
 
     for (x, y) in landmark:
-        cv2.circle(image, (int(x), int(y)), 2, (0, 0, 255), -1)
+        cv2.circle(image, (int(x), int(y)), 4, (0, 0, 255), -1)
 
 
     cv2.imshow('image', image)

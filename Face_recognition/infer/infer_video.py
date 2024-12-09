@@ -106,7 +106,9 @@ def infer_camera(min_face_area=config['min_face_area'],
                 if area > min_face_area:
                     if width * 0.15 < center_x < width * 0.85 and height * 0.15 < center_y < height * 0.85 and distance_from_center < min(width, height) * 0.4:
                         if previous_message != 1 and current_time - last_sound_time > sound_delay:
+                            
                             threading.Thread(target=playsound, args=('audio/guide_keepface.mp3',), daemon=True).start()
+                           
                             last_sound_time = current_time
                             previous_message = 1
 
@@ -117,13 +119,17 @@ def infer_camera(min_face_area=config['min_face_area'],
 
                     else:
                         if previous_message != 2 and current_time - last_sound_time > sound_delay:
+                          
                             threading.Thread(target=playsound, args=('audio/guide_centerface.mp3',), daemon=True).start()
+                         
                             last_sound_time = current_time
                             previous_message = 2
 
                 else:
                     if previous_message != 3 and current_time - last_sound_time > sound_delay:
+                        
                         threading.Thread(target=playsound, args=('audio/closer.mp3',), daemon=True).start()
+                       
                         last_sound_time = current_time
 
         else:
@@ -238,7 +244,11 @@ def check_validation(
 
             tts = gTTS(f"Xin chào {person_name}", lang='vi')
             tts.save(audio_path)
-            playsound(audio_path)
+            try:
+                playsound(audio_path)
+            except Exception as e:
+                print(f"Lỗi khi phát âm thanh: {e}")
+      
 
             person_identified = True
         
@@ -246,7 +256,11 @@ def check_validation(
     if not person_identified:
         valid_images_len= len(valid_images)
         print("Unknown person")
-        playsound('audio/retry.mp3')
+        try:
+            playsound('audio/retry.mp3')
+        except Exception as e:
+            print(f"Lỗi khi phát âm thanh: {e}")
+       
  
         log_data.append({
         'Person Name': 'Unknown',

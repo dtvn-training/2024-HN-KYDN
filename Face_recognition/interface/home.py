@@ -197,7 +197,9 @@ def infer_camera(
                     'valid_images': valid_images,
                     'is_reals': is_reals
                 }
-                canvas.delete('all')
+                def clear_canvas():
+                    canvas.delete('all')
+                root.after(7000, clear_canvas)
                 person_name = check_validation(
                     result, 
                     embeddings, 
