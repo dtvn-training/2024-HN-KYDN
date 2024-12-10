@@ -11,7 +11,7 @@ infer_video:
 
 identity_person:
   l2_threshold: 0.95
-  cosine_threshold: 0.55
+  cosine_threshold: 0.42
   k: 5 
   vote_threshold:  0.8
   distance_mode: 'cosine'

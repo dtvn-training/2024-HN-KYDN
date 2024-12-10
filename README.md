@@ -75,8 +75,9 @@ The system is operated according to the following flow:
 2. In stall requerement
     ```
     python -m venv .venv
-    pip install requirement.txt
     .venv\Scripts\activate
+    pip install requirement.txt
+  
     ```
 3. Create embedding
     + Select data gallery, create embedding, and save to data/data_source
