@@ -9,6 +9,9 @@ from .getface import mtcnn_inceptionresnetV1, yolo
 import torch.nn.functional as F
 import cv2
 
+
+
+
 # define device
 device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 
@@ -84,6 +87,9 @@ if __name__ == "__main__":
     
     image = Image.open('data/data_gallery_1/Dinh Nhat Ky/transformed_image_21.png').convert('RGB')
     input_image, face, prob, landmark = get_align(image)
+
+    plt.imshow(input_image.permute(1, 2, 0).numpy())
+    plt.show()
 
     print(input_image.shape)
     print(face)

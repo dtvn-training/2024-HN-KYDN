@@ -11,7 +11,15 @@ infer_video:
 
 identity_person:
   l2_threshold: 0.95
-  cosine_threshold: 0.42
+  cosine_threshold: 0.45
   k: 5 
   vote_threshold:  0.8
   distance_mode: 'cosine'
+
+
+collect_data:
+  min_face_area: 20000
+  bbox_threshold: 0.8
+  required_images: 30
+  is_anti_spoof: True
+  anti_spoof_threshold: 0.95

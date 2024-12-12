@@ -17,6 +17,8 @@ from tkinter import filedialog
 import os
 from CustomTkinterMessagebox import CTkMessagebox
 import yaml
+from .capture_image import collect_images
+
 
 
 with open('config.yaml', 'r') as file:
@@ -219,6 +221,8 @@ def infer_camera(
 
     threading.Thread(target=update_frame, daemon=True).start()
 
+def start_collect_images():
+    collect_images(canvas=canvas, root= root)
 
 def start_infer_camera():
 
@@ -336,6 +340,7 @@ button_open = customtkinter.CTkButton(left_frame, text="Open Camera", width=110,
 button_open.pack(pady=7)
 
 
+
 min_face_area_label = customtkinter.CTkLabel(left_frame, text="Min_face_area: 10000") 
 min_face_area_label.pack(pady=7)
 
@@ -411,6 +416,10 @@ validation_threshold_slider.pack(pady=4, padx=(4,4))
 
 
 ################ Right frame wiget ##########################
+button_open = customtkinter.CTkButton(right_frame, text="Add new employee", width=110, height=30, command=start_collect_images)
+button_open.grid(row=5, column=0, padx=20, pady=(10, 20))
+
+
 button_select_db = customtkinter.CTkButton(right_frame, text="Select db", width=110, height=30, command=select_db)
 button_select_db.grid(row=6, column=0, padx=20, pady=(10, 20))
 
